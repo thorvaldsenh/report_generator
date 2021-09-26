@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load my_filters %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" href="{% static 'basic_app/css/hcpstyle.css' %}">
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js'></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <title>{{data.names.client_name}} as of {{data.names.end|date:'Y-m-d'}}</title>
+  </head>
+  <body>
+
+<!-- Javascript charts functions -->
+<script>
+$(document).ready(function(){
+
+// Line Chart from chart.js
+setChartPerformance()
+function setChartPerformance(){
+  var ctx = document.getElementById('performanceChart').getContext('2d');
+  var performanceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels: {{data.twr_chart.labels|safe}},
+          datasets: [{
+              label: 'TWR',
+              data: {{data.twr_chart.twrs}},
+              borderColor: "#2c5082",
+              pointRadius: 0,
+              fill: false
+          },
+          {
+              label: 'BM',
+              data: {{data.twr_chart.bms}},
+              borderColor: "#3e95cd",
+              pointRadius: 0,
+              fill: false
+          }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        legend: {
+                position: 'bottom',
+                usePointStyle: true,
+                boxWidth: '20',
+              },
+        responsive: true,
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      beginAtZero: false
+                  }
+              }],
+              xAxes: [{
+              ticks: {
+                  autoSkip: true,
+                  maxTicksLimit: 16
+              }
+          }]
+          }
+      }
+  });
+}
+})
+
+// Currency Chart JavaScript Google Charts
+
+      google.charts.load("current", {packages:["corechart"]});
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable({{data.currency_chart|safe}});
+
+        var options = {
+          pieHole: 0.4,
+          colors: ['#B4C6E7',
+          '#8ea9db',
+          '#305496',
+          '#203764'],
+          width: '100%',
+          height: '175px',
+          'chartArea': {'top':'0','bottom':'25','width': '100%', 'height': '150px'},
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+        chart.draw(data, options);
+      }
+</script>
+
+
+<!-- Start of Report -->
+    <div class="report">
+
+    <!-- Start of report page -->
+    <div class="paper">
+    <!-- investment performance -->
+    <h1>Investment Performance</h1>
+    <h2 id="clientheader">{{data.names.client_name}} as of {{data.names.end|date:'Y-m-d'}}</h2>
+    <div class="firstbox">
+      <table>
+        <thead align="center">
+          <tr>
+              <th class="left"></th>
+              <th class="blank">   </th>
+              <th colspan="4">Allocation</th>
+              <th class="blank">   </th>
+              <th colspan="3">{{data.names.end|date:'F Y'}}</th>
+              <th class="blank">   </th>
+              <th colspan="3">Year-to-date-{{data.names.end|date:'Y'}}</th>
+          </tr>
+          <tr>
+            <th>Asset Class</td>
+            <th class="blank">   </th>
+            <th>Mkt Val</th>
+            <th>Allocation</th>
+            <th>Strategy</th>
+            <th>Delta</th>
+            <th class="blank">   </th>
+            <th>M{{data.names.currency}}</th>
+            <th>TWR %</th>
+            <th>BM %</th>
+            <th class="blank">   </th>
+            <th>M{{data.names.currency}}</th>
+            <th>TWR %</th>
+            <th>BM %</th>
+          </tr>
+        </thead>
+        {% if data %}
+        {% for d in data.overview %}
+          <tr>
+            <td align="left">{{ d.name }}</td>
+            <td class="blank"></td>
+            <td>{{ d.mv|millions }}</td>
+            <td>{{d.share|floatformat:3|percentage }}</td>
+            <td>{{d.strategic|floatformat:3|percentage }}</td>
+            <td>{{d.delta|millions}}</td>
+            <td class="blank"></td>
+            <td>{{ d.PnlMTD|millions }}</td>
+            <td>{{ d.twrMTD|floatformat:3|percentage  }}</td>
+            <td>{{ d.bm_return_mtd|floatformat:3|percentage }}</td>
+            <td class="blank"></td>
+            <td>{{ d.PnlYTD|millions }}</td>
+            <td>{{ d.twrYTD|floatformat:3|percentage  }}</td>
+            <td>{{ d.bm_return_ytd|floatformat:3|percentage }}</td>
+          </tr>
+        {% endfor %}
+        {% for d in data.topsum %}
+        <tr class="sum">
+            <td align="left">Total</td>
+            <td class="blank"></td>
+            <td>{{d.mv|millions}}</td>
+            <td>{{d.share|floatformat:3|percentage }}</td>
+            <td>100.0%</td>
+            <td>0</td>
+            <td class="blank"></td>
+            <td>{{ d.PnlMTD|millions }}</td>
+            <td>{{ d.twrMTD|floatformat:3|percentage  }}</td>
+            <td>{{ d.twrBmMTD|floatformat:3|percentage  }}</td>
+            <td class="blank"></td>
+            <td>{{ d.PnlYTD|millions }}</td>
+            <td>{{ d.twrYTD|floatformat:3|percentage  }}</td>
+            <td>{{ d.twrBmYTD|floatformat:3|percentage  }}</td>
+          </tr>
+          {% endfor %}
+          {% else%}
+          <tr>
+            <td>NO ACCESS RECORDS FOUND!</td>
+          </tr>
+
+          {% endif %}
+      </table>
+        <p id="bm_note">Benchmark: {{data.bm_note }}</p>
+    </div>
+
+
+    <!-- Performance Chart -->
+    <div class="performancechart" width:"400" height:"400">
+      <h2>Performance vs Benchmark Rolling {{months}} Months</h2>
+      <canvas id="performanceChart"></canvas>
+    </div>
+
+    <div class="nextlast">
+
+    <!-- Strategy Chart-->
+      <div class="allocation">
+        <h3>Currency Allocation</h3>
+        <div id="donutchart"></div>
+
+      </div>
+
+    <!-- top and bottom investments -->
+    <div class="topbottom">
+      <h3>Best and Worst Performing Investments</h3>
+      <table>
+        <thead>
+          <th class="left">Security</th>
+          <th>Market Value</th>
+          <th>Change ({{data.names.currency}})</th>
+          <th>TWR %</th>
+        </thead>
+          <tr>
+            <td align="left"><strong>Top 3 Performing investments</strong></td>
+          </tr>
+        {% for d in data.top %}
+          {% if forloop.counter < 4 %}
+            <tr>
+              <td align="left">{{d.name|truncatechars:38}}</td>
+              <td>{{d.mv|millions}}</td>
+              <td align="center">{{d.profitsytd|millions}}</td>
+              <td>{{d.twr|percentage}}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+        <tr height="15px">
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+          <tr>
+            <td align="left"><strong>Bottom 3 Performing investments</strong></td>
+          </tr>
+        {% for d in data.bottom %}
+
+          {% if forloop.counter < 4 %}
+            <tr>
+              <td align="left">{{d.name|truncatechars:38}}</td>
+              <td>{{d.mv|millions}}</td>
+              <td align="center">{{d.profitsytd|millions}}</td>
+              <td>{{d.twr|percentage}}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </table>
+    </div>
+
+    </div>
+
+    <!-- clearing page for new box -->
+    <div class="clear">
+    </div>
+
+
+    <!-- cash boxes on the bottom of the page -->
+    <div class="bottom">
+      <div class="box1">
+        <h4>Starting Cash Balance</h4>
+        <p><strong>{{data.cash.data.0.startCash|floatformat:0|intcomma}}</strong></p>
+        <p>{{data.names.start|date:'Y-m-d'}}</p>
+      </div>
+      <div class="box2">
+        <h4>Net Deposits ({{data.names.currency}})</h4>
+        <p><strong>{{data.cash.data.0.netDeposits|floatformat:0|intcomma}}</strong></p>
+        <p>{{data.names.end|date:'Y-m-d'}}</p>
+      </div>
+      <div class="box3">
+        <h4>Net Proceeds ({{data.names.currency}})</h4>
+        <p><strong>{{data.cash.data.0.netProceeds|floatformat:0|intcomma}}</strong></p>
+        <p>{{data.names.end|date:'Y-m-d'}}</p>
+      </div>
+      <div class="box4">
+        <h4>Ending Cash Balance</h4>
+        <p><strong>{{data.cash.data.0.endCash|floatformat:0|intcomma}}</strong></p>
+        <p>{{data.names.end|date:'Y-m-d'}}</p>
+      </div>
+
+    </div>
+    <!-- clearing page for new box -->
+    <div class="clear">
+    </div>
+    <!-- <div class="page_break">
+        <p style="page-break-before: always">
+    </div> -->
+    <div class="paper2">
+
+
+    <div class="positions">
+      <h1>List of Holdings</h1>
+      <h2>{{data.names.client_name}} as of {{data.names.end|date:'Y-m-d'}}</h2>
+      <div class="centertable">
+
+
+    <table class="table-striped">
+      <thead align="center" height="40px">
+        <th align"left" class="securityname">Security Name</th>
+        <th>Holding</th>
+        <th>Cost Price</th>
+        <th>Cost Value</th>
+        <th>Market Price</th>
+        <th>Market Value</th>
+        <th>Profits YTD</th>
+        <th>TWR YTD</th>
+      </thead>
+      {% for assets in data.positions %}
+        {% for d in assets.fields.grouppedAnalytics %}
+          <tr class="">
+            <td align="left" class="avoid">{{d.fields.name}}</td>
+            <td align="right">{{d.fields.amount|floatformat:2|intcomma}}</td>
+            <td align="right">{{d.fields.purchaseprice|floatformat:2|intcomma}}</td>
+            <td align="right">{{d.fields.bookvalue|floatformat:0|intcomma}}</td>
+            <td align="right">{{d.fields.price|floatformat:2|intcomma}}</td>
+            <td align="right">{{d.fields.mv|floatformat:0|intcomma}}</td>
+            <td align="right">{{d.fields.profitsytdadjfees|floatformat:0|intcomma}}</td>
+            <td align="right">{{d.fields.perc_return|floatformat:3|percentage}}</td>
+          </tr>
+        {% endfor %}
+        <tr class="table-sum">
+            <td align="left" class="avoid">{{assets.fields.name}}</td>
+            <td align="right"></td>
+            <td align="right"></td>
+            <td align="right">{{assets.fields.bookvalue|floatformat:0|intcomma}}</td>
+            <td align="right"></td>
+            <td align="right">{{assets.fields.mv|floatformat:0|intcomma}}</td>
+            <td align="right">{{assets.fields.profitsytdadjfees|floatformat:0|intcomma}}</td>
+            <td align="right">{{assets.fields.perc_return|floatformat:3|percentage}}</td>
+        </tr>
+      {% endfor %}
+
+      {% for d in data.profit_before_fees %}
+        <tr class="table-total-sum">
+          <td align="left" class="avoid">Total Before Fees</td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right">{{d.fields.bookvalue|floatformat:0|intcomma}}</td>
+          <td align="right"></td>
+          <td align="right">{{d.fields.mv|floatformat:0|intcomma}}</td>
+          <td align="right">{{d.fields.profitsytdadjfees|floatformat:0|intcomma}}</td>
+          <td align="right">{{d.fields.perc_return|floatformat:3|percentage}}</td>
+        </tr>
+      {% endfor %}
+
+
+      {% for d in data.fees %}
+        <tr class="table-sum">
+          <td align="left" class="avoid">Portfolio Fees</td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right">{{d.fields.profitsytdadjfees|floatformat:0|intcomma}}</td>
+          <td align="right">{{d.fields.perc_return|floatformat:3|percentage}}</td>
+        </tr>
+      {% endfor %}
+
+
+      {% for d in data.topsum %}
+        <tr class="table-total-sum">
+          <td align="left" class="avoid">GRAND TOTAL</td>
+          <td align="right"></td>
+          <td align="right"></td>
+          <td align="right">{{d.bookvalue|floatformat:0|intcomma}}</td>
+          <td align="right"></td>
+          <td align="right">{{d.mv|floatformat:0|intcomma}}</td>
+          <td align="right">{{d.PnlYTD|floatformat:0|intcomma}}</td>
+          <td align="right">{{d.twrYTD|floatformat:3|percentage}}</td>
+        </tr>
+      {% endfor %}
+
+    </table>
+    {% if data.commitment.data.0.remaining_commitment != 0 %}
+      <p class="Private-Equity">Remaining total private equity commitment is {{data.names.currency}} {{ data.commitment.data.0.remaining_commitment|floatformat:0|intcomma }}</p>
+    {% endif %}
+      </div>
+    </div>
+    </div>
+    </div>
+
+  </body>
+</html>

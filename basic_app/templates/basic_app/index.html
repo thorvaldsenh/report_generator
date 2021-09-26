@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="{% static 'basic_app/css/hcpstyle.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Report Menu</title>
+  </head>
+  <body>
+
+  <div class="paper">
+    <h1>HCP Simple Client PDF-Report Generator</h1>
+    <h2>Please enter your inputs here: </h2>
+
+    <div class="form-group">
+      <form method="POST">
+          {{ form.as_p }}
+          {% csrf_token %}
+        <input class="submit-button" type="submit" value="Submit">
+        <button class="update_btn" type="submit" name="_update" value="Update Client List">Update Client List</button>
+      </form>
+    </div>
+
+  </div>
+
+  </body>
+</html>

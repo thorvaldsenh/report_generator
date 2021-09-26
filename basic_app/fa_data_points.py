@@ -1,0 +1,13 @@
+data_points = {'ISIN': 'security.isinCode',
+               'name': 'name',
+               'amount': 'analysis(GIVEN).amount',
+               'purchaseprice': 'analysis(GIVEN).purchaseUnitPrice',
+               'bookvalue': 'analysis(GIVEN).purchaseTradeAmount',
+               'price': 'analysis(GIVEN).marketUnitPrice',
+               'mv': 'analysis(GIVEN).marketValue',
+               'profitsytd': 'analysis(GIVEN).totalNetProfitsOrig',
+               'twr': 'analysis(GIVEN).twr',
+               'twrsec': 'analysis(GIVEN).twrsec',
+               'securitytype': 'security.securityTypeCode',
+               'ongoingcharges': 'analysis(GIVEN).exPostPfCostCat2',
+               'averagemv': 'analysis(GIVEN).averageMarketValue'}
