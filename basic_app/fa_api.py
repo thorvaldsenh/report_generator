@@ -16,11 +16,11 @@ class FaApiRequests:
                         'fa-token-name': const.fa_token_name,
                         'fa-token-value': const.fa_token_value,
                         'cache-control': "no-cache", }
-        self.parent_id = client['portfolio_ids']
-        self.ultimate_parent = client['ultimate_parent']
+        self.parent_id = client
+        self.ultimate_parent = client
         self.asset_class = const.asset_class
         self.installation = const.client_installation
-        self.portfolios = [client['portfolio_ids']]
+        self.portfolios = [client]
 
     def get_query(self, query_name, start_date=None, end_date=None, portfolios=None):
         params = {}
@@ -243,3 +243,178 @@ class FaApiRequests:
         # self.benchmark = json_data['benchmarkDataString']
         # portfolios = [self.parent_id] + [x['id'] for x in json_data['portfolios']]
         # self.portfolios = self.portfolios + portfolios
+
+
+# Mapping data fields in FA to desired output
+data_points = {'name': 'name', 'code': 'code', 'endDate': 'endDate', 'startDate': 'startDate',
+               # Market Value Columns
+               'marketValue': 'analysis(GIVEN).marketValue',
+               'mv': 'analysis(GIVEN).marketValue', 'mvOpenStart': 'analysis(GIVEN).marketValueStart',
+               'marketPrice': 'analysis(GIVEN).marketUnitPrice', 'mvOpenYTD': 'analysis(CALYEAR-0).marketValueStart',
+               'mvOpenMTD': 'analysis(CALMONTH-0).marketValueStart',
+               'holding': 'analysis(GIVEN).amount',
+               'amount': 'analysis(GIVEN).amount',
+               'exposure': 'analysis(GIVEN).exposure',
+               'shareOfTotal': 'analysis(GIVEN).shareOfTotal',
+               'lastPriceDate': 'analysis(GIVEN).marketUnitPriceDate',
+               'costPrice': 'analysis(GIVEN).purchaseUnitPrice',
+               'purchaseValue': 'analysis(GIVEN).purchaseValue',
+               # 'purchaseValue': 'analysis(GIVEN).purchaseTradeAmount', -> Futures as nominal amount
+               # TWR Columns
+               'twrLocMTD': 'analysis(CALMONTH-0).twrSec', 'twrLocYTD': 'analysis(CALYEAR-0).twrSec',
+               'twrLocStart': 'analysis(GIVEN).twrSec', 'twrFxMTD': 'analysis(CALMONTH-0).twrFx',
+               'twrFxYTD': 'analysis(CALYEAR-0).twrSec', 'twrFxStart': 'analysis(GIVEN).twrSec',
+               'twrMTD': 'analysis(CALMONTH-0).twr', 'twrYTD': 'analysis(CALYEAR-0).twr',
+               'twrQTD': 'analysis(CALQUARTER-0).twr', 'twrStart': 'analysis(GIVEN).twr',
+               'twrGrossMTD': 'analysis(CALMONTH-0).twrGross',
+               'twrGrossYTD': 'analysis(CALYEAR-0).twrGross', 'twrGrossStart': 'analysis(GIVEN).twrGross',
+               'twrAnnMTD': 'analysis(CALMONTH-0).twrAnn', 'twrAnnYTD': 'analysis(CALYEAR-0).twrAnn',
+               'twrAnnStart': 'analysis(GIVEN).twrAnn',
+               'twrGrossAnnMTD': 'analysis(CALMONTH-0).twrGrossAnn',
+               'twrGrossAnnYTD': 'analysis(CALYEAR-0).twrGrossAnn',
+               'twrGrossAnnStart': 'analysis(GIVEN).twrGrossAnn',
+               'twrContribMTD': 'analysis(CALMONTH-0).twr', 'twrContribYTD': 'analysis(CALYEAR-0).twr',
+               'twrContribStart': 'analysis(GIVEN).twr',
+               'bmMTD': 'analysis(CALMONTH-0).twrBm', 'bmYTD': 'analysis(CALYEAR-0).twrBm',
+               'bmStart': 'analysis(GIVEN).twrBm',
+               'bmAnnMTD': 'analysis(CALMONTH-0).twrBmAnn', 'bmAnnYTD': 'analysis(CALYEAR-0).twrBmAnn',
+               'bmAnnStart': 'analysis(GIVEN).twrBmAnn',
+               'sharpeYTD': 'analysis(CALYEAR-0).sharpeAnn', 'sharpeStart': 'analysis(GIVEN).sharpeAnn',
+               'sharpeBmYTD': 'analysis(CALYEAR-0).sharpeBm', 'sharpeBmStart': 'analysis(GIVEN).sharpeBm',
+               'alphaYTD': 'analysis(CALYEAR-0).alpha', 'alphaStart': 'analysis(GIVEN).alpha',
+               'volYTD': 'analysis(CALYEAR-0).volAnn', 'volStart': 'analysis(GIVEN).volAnn',
+               'volBmYTD': 'analysis(CALYEAR-0).volBm', 'volBmStart': 'analysis(GIVEN).volBm',
+               'correlYTD': 'analysis(CALYEAR-0).correl', 'correlStart': 'analysis(Start).correl',
+               # Total Net Return columns
+               'pnlMTD': 'analysis(CALMONTH-0).totalNetProfitsInclAccruedInterest',
+               'pnlQTD': 'analysis(CALQUARTER-0).totalNetProfitsInclAccruedInterest',
+               'pnlYTD': 'analysis(CALYEAR-0).totalNetProfitsInclAccruedInterest',
+               'pnlStart': 'analysis(GIVEN).totalNetProfitsInclAccruedInterest',
+               # Total FX Return
+               'pnlFxMTD': 'analysis(CALMONTH-0).totalNetProfitsInclAccruedInterestFx',
+               'pnlFxYTD': 'analysis(CALYEAR-0).totalNetProfitsInclAccruedInterestFx',
+               'pnlFxStart': 'analysis(GIVEN).totalNetProfitsInclAccruedInterestFx',
+               # Total Sec Return
+               'pnlSecMTD': 'analysis(CALMONTH-0).totalNetProfitsInclAccruedInterestSec',
+               'pnlSecYTD': 'analysis(CALYEAR-0).totalNetProfitsInclAccruedInterestSec',
+               'pnlSecStart': 'analysis(GIVEN).totalNetProfitsInclAccruedInterestSec',
+               # Unrealized Columns
+               'unrealizedLocalMTD': 'analysis(CALMONTH-0).unrealizedProfitsInclAccruedInterestSec',
+               'unrealizedLocalYTD': 'analysis(CALYEAR-0).unrealizedProfitsInclAccruedInterestSec',
+               'unrealizedLocalStart': 'analysis(GIVEN).unrealizedProfitsInclAccruedInterestSec',
+               # Realized Columns
+               'realizedLocalMTD': 'analysis(CALMONTH-0).realizedProfitsInclAccruedInterestSec',
+               'realizedLocalYTD': 'analysis(CALYEAR-0).realizedProfitsInclAccruedInterestSec',
+               'realizedLocalStart': 'analysis(GIVEN).realizedProfitsInclAccruedInterestSec',
+               # Dividends, Coupons and Interest
+               'divMTD': 'analysis(CALMONTH-0).otherProfits',
+               'divYTD': 'analysis(CALYEAR-0).otherProfits',
+               'divStart': 'analysis(GIVEN).otherProfits',
+               # Total Cost Columns
+               'totalCostsYTD': 'analysis(CALYEAR-0).totalCosts',
+               'totalCostsStart': 'analysis(GIVEN).totalCosts', 'onGoingChargesYTD': 'analysis(GIVEN).exPostPfCostCat2',
+               'grossProfitsYTD': 'analysis(GIVEN).totalGrossProfitsInclAccruedInterest',
+               # Net Cash Flow columns
+               'netCashflowStart': 'analysis(GIVEN).netCashflow', 'netCashflowYTD': 'analysis(CALYEAR-0).netCashflow',
+               'netCashflowMTD': 'analysis(CALMONTH-0).netCashflow', 'dividendsStart': 'analysis(GIVEN).otherProfits',
+               'investedAmountStart': 'analysis(GIVEN).posNetCashflow',
+               'accruedInterestChange': 'analysis(GIVEN).accruedInterestChange',
+               'paidAccruedInterest': 'analysis(GIVEN).paidAccruedInterest',
+               'cur': 'security.currencyName', 'curCod': 'security.currencyCode',
+               # Private Equity Columns
+               'totCom': 'analysis(GIVEN).commitmentTotal', 'remCom': 'analysis(GIVEN).remainingCommitment',
+               'paidInCap': 'analysis(GIVEN).paidInCapital', 'dist': 'analysis(GIVEN).distributions',
+               'tvpi': 'analysis(GIVEN).tvpi', 'irr': 'analysis(GIVEN).irr',
+               'capAccDate': 'analysis(GIVEN).capAcc', 'INIT': 'analysis(GIVEN).INIT',
+               'linkedSecurity': 'security.linkedSecurity', 'maturityDate': 'security.maturityDate',
+               'portfolioContact': 'portfolio.primaryContactName'
+               }
+
+custom_columns = {'CapAcc': 'analysis(GIVEN).customColumnValues.CapAcc.defaultValue',
+                  'INIT': 'analysis(GIVEN).customColumnValues.CapAcc.defaultValue',
+                  'MonMul': 'analysis(GIVEN).customColumnValues.MonMul.defaultValue',
+                  'realizedAmount': 'analysis(GIVEN).customColumnValues.realizedAmount.defaultValue',
+                  'investedAmount': 'analysis(GIVEN).customColumnValues.investedAmount.defaultValue',
+                  'ownership_percent': 'analysis(GIVEN).customColumnValues.ownership_percent.defaultValue',
+                  'securityOutstandingAmount': 'analysis(GIVEN).customColumnValues.securityOutstandingAmount.defaultValue',
+                  'securityCreditRatingValue': 'analysis(GIVEN).customColumnValues.securityCreditRatingValue.defaultValue',
+                  'shareMarketCap': 'analysis(GIVEN).customColumnValues.shareMarketCap.defaultValue',
+                  'marketValueSec': 'analysis(GIVEN).customColumnValues.marketValueSec.defaultValue',
+                  'grossPaidInCapitalSec': 'analysis(GIVEN).customColumnValues.grossPaidInCapitalSec.defaultValue',
+                  'totalCommitmentSec': 'analysis(GIVEN).customColumnValues.totalCommitmentSec.defaultValue',
+                  'privateEquityCashflowSec': 'analysis(GIVEN).customColumnValues.privateEquityCashflowSec.defaultValue',
+                  'privateEquityProfitSec': 'analysis(GIVEN).customColumnValues.privateEquityProfitSec.defaultValue',
+                  'privateEquityProfitSecYTD': 'analysis(CALYEAR-0).customColumnValues.privateEquityProfitSec.defaultValue',
+                  'customTVPISec': 'analysis(GIVEN).customColumnValues.customTVPISec.defaultValue',
+                  'remainingCommitmentSec': 'analysis(GIVEN).customColumnValues.remainingCommitmentSec.defaultValue',
+                  'OverlayName': 'analysis(GIVEN).customColumnValues.OverlayName.defaultValue',
+                  'distributedCapitalSec': 'analysis(GIVEN).customColumnValues.distributedCapitalSec.defaultValue'}
+
+
+def get_data_points(list_of_data, source=None, list_of_values=None, renamed=None):
+    field_list = []
+    if source:
+        for i in list_of_data:
+            if list_of_values:
+                for j in list_of_values:
+                    field = f"{i}=analysis(GIVEN).customColumnValues.{i}.{j}"
+                    field_list.append(field)
+            else:
+                field = f"{i}=analysis(GIVEN).customColumnValues.{i}.defaultValue"
+                print(field)
+                field_list.append(field)
+    else:
+        source = data_points
+        for i in list_of_data:
+            field = i + "=" + source[i]
+            field_list.append(field)
+    if renamed:
+        new_field_list = [
+            f.replace(f.split("=")[0], renamed[f.split("=")[0]], 1)for f in field_list]
+        field_list = new_field_list
+    return field_list
+
+
+fa_group_codes = {"PORTFOLIO": {"name": "Portfolio",
+                                "description": "Grouped by parent portfolio.If the list of portfolios contained sub portfolios, those are grouped under the parent portfolio"},
+                  "PORTFOLIO_ALL": "Each portfolio separately",
+                  "PORTFOLIO_TYPE": "Grouped by portfolio type",
+                  "PORTFOLIO_COUNTRY": "Grouped by portfolio country",
+                  "PORTFLIO_JURIDICAL": "Grouped by portfolio juridical",
+                  "PORTFOLIO_CONTACT": "Grouped by portfolio primary contact",
+                  "SECURITY": "Grouped by position's security. If account, security is the account currency.",
+                  "POSITION": "Grouped by position.Otherwise the same as security, but with account, grouping is done by account number and name.",
+                  "LINKEDSECURITY": "Grouped by position's security. If security has a linked security, position is grouped under the linked security",
+                  "TYPE": "Grouped by security type",
+                  "SUBTYPE": "Grouped by security sub type",
+                  "BASETYPE": "Grouped by security base type",
+                  "CLASS1": "Grouped by security class 1",
+                  "CLASS2": "Grouped by security class 2",
+                  "CLASS3": "Grouped by security class 3",
+                  "CLASS4": "Grouped by security class 4",
+                  "CLASS5": "Grouped by security class 5",
+                  "COUNTRY": "Grouped by security country",
+                  "CURRENCY": "Grouped by security currency",
+                  "MARKETPLACE": "Grouped by security market place",
+                  "SETTLEMENTPLACE": "Grouped by security settlement place",
+                  "ISSUER": "Grouped by security issuer",
+                  "GROUP": "Grouped by group of a given allocation group.Allocation share is taken into account ",
+                  "SECTOR": "Grouped by sector of a given allocation group.Allocation share is taken into account",
+                  "ASSET_LIABILITY": "All positions are of type ASSET, all cash accounts are also ASSET, non cash accounts are LIABILITY",
+                  "ASSET_CATEGORY": "All positions are of type ASSET, all accounts are grouped by account group, if it is missing, the type is OTHER"}
+
+fa_port_limit = {"numGroup1": "numGroup1",
+                 "numGroup1Filter": "numGroup1Filter",
+                 "numGroup2": "numGroup2",
+                 "numGroup2Filter": "numGroup2Filter",
+                 "numGroupCode": "numGroupCode",
+                 "numFieldName": "numFieldName",
+                 "selectMethod": "selectMethod",
+                 "denomFieldName": "denomFieldName",
+                 "limitGroup": {"code": "limitGroupCode", "name": "limitGroupName"},
+                 "minWarnValue": "minWarnValue",
+                 "minValue": "minValue",
+                 "maxValue": "maxValue",
+                 "maxWarnValue": "maxWarnValue",
+                 "limitCode": "limitCode",
+                 "limitName": "limitName"}

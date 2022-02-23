@@ -55,14 +55,12 @@ def create_parameters_json_twr(fields, portfolio, startDate, endDate):
 # Function for getting analytics data from FA API and creating a dataframe from it
 def get_analytics_twr(payload):
     response = requests.request("POST", const.get_analytics_url(), data=payload, headers=const.headers)
-    print(response)
     if not response:
         return const.bad_resp
     try:
         json_resp = json.loads(response.text)
     except:
         return {"data": "Bad response from FA Solutions. Please try again"}
-    print(response.text)
     json_resp = json.dumps(json_resp['analytics']['grouppedAnalyticsTimeSeries']['PORT_DATA']['timeSeriesSelected'])
     df = pandas.read_json(json_resp)
     df = pandas.json_normalize(df['fields'])
@@ -82,12 +80,8 @@ def get_analytics_twr(payload):
 #     return dicret
 
 def return_twr(portfolio, startDate, endDate):
-    print(portfolio)
-    print(startDate)
-    print(endDate)
     api_fields = create_api_fields()
     df_json_data = create_parameters_json_twr(api_fields, portfolio, startDate, endDate)
-    print(df_json_data)
     df = get_analytics_twr(df_json_data)
     try:
         dicret = df.to_dict('records')

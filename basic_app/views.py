@@ -97,8 +97,6 @@ class HomeView(View):
 def report(request):
     names = {'client_name': client_name, 'start': start, 'end': end, 'currency': currency}
     overview, bm_note, topsum = analytics.return_analytics(parentPf, start, end)
-    print("printing from view here:")
-    print(bm_note)
     # top_bottom = get_top_bottom(start, end, allPf)
     cash = get_cash(start, end, allPf)
     try:
@@ -119,4 +117,6 @@ def report(request):
     months = min(36, ((end.year - client_start.year) * 12) + end.month - client_start.month + (
             end.day > client_start.day > 0))
     my_dict['months'] = months
+    # print("********************")
+    # print(json.dumps(my_dict, indent=4, default=str))
     return render(request, 'report.html', context=my_dict)

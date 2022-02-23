@@ -3,7 +3,7 @@ import json
 from .fa_data_points import data_points
 
 
-def get_data_points(list_of_data):
+def create_data_points(list_of_data):
     return [i + "=" + data_points[i] for i in list_of_data]
 
 
